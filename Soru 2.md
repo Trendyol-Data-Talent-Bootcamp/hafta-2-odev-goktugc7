@@ -1,10 +1,11 @@
 # 1980’den itibaren herhangi bir spor grubunda üst üste 3 veya daha fazla madalya almış atletleri bulalım.
 ```SQL
 SELECT * FROM (
-    SELECT Sport, Athlete, COUNT(1) as Medals, ROW_NUMBER() OVER(PARTITION BY SPORT ORDER BY COUNT(1) desc) AS Row
+    SELECT Sport, Athlete,
+    FIRST_VALUE(Year) OVER(partition by Sport, Athlete order by Sport, Athlete) as firstYear,
+    LEAD(Year, 1) OVER(partition by Sport, Athlete order by Athlete, Year) as secondYear,
+    LEAD(Year, 2) OVER(partition by Sport, Athlete order by Athlete, Year) as thirdYear
     FROM `dsmbootcamp.sample.summer_medals`
-    WHERE Medal is not null and year >= 1980
-    GROUP BY Sport, Athlete
-    ORDER BY Sport, COUNT(1) desc
-) WHERE Medals >= 3
+    ORDER BY Sport, Athlete
+)WHERE thirdYear - secondYear=4 and secondYear - firstYear=4;
 ```
